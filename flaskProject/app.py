@@ -1,22 +1,24 @@
-from flask import Flask
+from flask import Flask, render_template, current_app
+from flask_socketio import SocketIO
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app)
 
 
 @app.route('/')
 def hello_world():  # put application's code here
-    return '<a href="/login" >Login</a>'
+    users = ['sam', 'hakeem', 'ethan']
+    return render_template('index.html', members=users)
 
 @app.route('/login')
 def login():
-    return """<form action="/action_page.php">
-  <label for="fname">First name:</label>
-  <input type="text" id="fname" name="fname"><br><br>
-  <label for="lname">Last name:</label>
-  <input type="text" id="lname" name="lname"><br><br>
-  <input type="submit" value="Submit">
-</form>"""
+    return current_app.send_static_file('login.html')
+
+@app.route('/register')
+def register():
+    return current_app.send_static_file('register.html')
 
 
 if __name__ == '__main__':
-    app.run()
+    socketio.run(app)
