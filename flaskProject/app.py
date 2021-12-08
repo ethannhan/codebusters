@@ -30,7 +30,7 @@ def register():
 
 @app.route("/profile_picture")
 def profile_picture():
-
+    pass
 
 
 if __name__ == '__main__':
