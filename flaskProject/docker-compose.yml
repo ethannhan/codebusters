@@ -1,9 +1,9 @@
-version: '3.3'
+version: '3.9'
 services:
   mongo:
     image: mongo:4.2.5
-  app:
-    build: ..
+  main:
+    build: .
     environment:
       WAIT_HOSTS: mongo:27017
     ports:
