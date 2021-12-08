@@ -1,9 +1,15 @@
-from flask import Flask, render_template, current_app, request
+from flask import Flask, render_template, current_app, request, redirect, url_for, flash
 from flask_socketio import SocketIO
+from werkzeug.utils import secure_filename
+import os
+
+UPLOAD_PATH = "./profile_pictures"
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
+app.config['UPLOAD_PATH'] = UPLOAD_PATH
 socketio = SocketIO(app)
+
 
 @socketio.on('connect')
 def test_connect(auth):
@@ -29,9 +35,17 @@ def register():
         password = request.form.get('password')
     return current_app.send_static_file('register.html')
 
-@app.route("/profile_picture")
+
+@app.route("/image-upload", methods=["POST", "GET"])
 def profile_picture():
-    pass
+    uploaded_file = request.files["file"]
+    print("filename is: {}".format(uploaded_file.filename))
+    filename = secure_filename(uploaded_file.filename)
+    if filename:
+        print("filename is: {}".format(uploaded_file.filename))
+        uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+    return redirect("http://localhost:5000")
+
 
 
 if __name__ == '__main__':
