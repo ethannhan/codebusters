@@ -1,2 +1,3 @@
 flask
-mongodb
+flask_socketio
+pymongo

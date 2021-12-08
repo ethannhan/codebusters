@@ -28,6 +28,10 @@ def login():
 def register():
     return current_app.send_static_file('register.html')
 
+@app.route("/profile_picture")
+def profile_picture():
+
+
 
 if __name__ == '__main__':
     socketio.run(app)
