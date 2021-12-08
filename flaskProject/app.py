@@ -1,4 +1,4 @@
-from flask import Flask, render_template, current_app, request
+from flask import Flask, render_template, current_app, request, make_response
 from flask_socketio import SocketIO
 import helper_functions
 import pymongo
@@ -24,6 +24,7 @@ def hello_world():  # put application's code here
 
 @app.route('/login', methods=['post', 'get'])
 def login():
+    resp = make_response(current_app.send_static_file('login.html'))
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -31,7 +32,8 @@ def login():
             print("account found")
             user = userCollection.find_one({'username': username})
             check_password = bcrypt.checkpw(password.encode(), user['password'])
-    return current_app.send_static_file('login.html')
+        resp.set_cookie('username', username)
+    return resp
 
 @app.route('/register', methods=['post', 'get'])
 def register():
