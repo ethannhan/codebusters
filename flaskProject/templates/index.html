@@ -19,6 +19,12 @@
       <p><input type="submit" value="Submit"></p>
     </form>
 
+{% if filename %}
+  <h1>some text<img src="{{filename}}"> more text!</h1>
+{% else %}
+  <h1>no image for whatever reason</h1>
+{% endif %}
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
 <script type="text/javascript" charset="utf-8">
     var socket = io();
