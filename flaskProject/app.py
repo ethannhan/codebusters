@@ -20,12 +20,13 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        print(username)
-        print(password)
     return current_app.send_static_file('login.html')
 
-@app.route('/register')
+@app.route('/register', methods=['post', 'get'])
 def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
     return current_app.send_static_file('register.html')
 
 @app.route("/profile_picture")
