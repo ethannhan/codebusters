@@ -8,7 +8,7 @@ import os
 from werkzeug.utils import secure_filename
 
 
-myclient = pymongo.MongoClient('localhost', 27017)
+myclient = pymongo.MongoClient('mongo', 27017) #TODO mongo/localhost
 userdatabase = myclient["accounts"]
 userCollection = userdatabase['users']
 
@@ -22,15 +22,19 @@ app.config['SECRET_KEY'] = 'secret!'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 socketio = SocketIO(app)
 
+users = []
 
 @socketio.on('connect')
 def test_connect(auth):
-    print('connected')
+    username = request.cookies.get('username')
+    print(username, file=sys.stderr)
+    users.append(username)
+    print('connected', file=sys.stderr)
 
 
 @app.route('/')
 def hello_world():
-    users = ['sam', 'hakeem', 'ethan', "nitya"]
+    print("cookies are: {}".format(request.cookies))
     return render_template('index.html', members=users)
 
 
@@ -63,7 +67,6 @@ def register():
 
 @app.route('/status', methods=['POST', 'GET'])
 def set_status():
-    print("cookies are: {}".format(request.cookies))
     resp = make_response(current_app.send_static_file('status.html'))
     if request.method == 'POST':
         print('here', file=sys.stderr)
