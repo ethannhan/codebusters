@@ -8,9 +8,13 @@ import os
 from werkzeug.utils import secure_filename
 
 
-myclient = pymongo.MongoClient('mongo', 27017) #TODO mongo/localhost
+myclient = pymongo.MongoClient('localhost', 27017) #TODO mongo/localhost
 userdatabase = myclient["accounts"]
 userCollection = userdatabase['users']
+imagesCollection = userdatabase["images"]
+# imagesCollection.delete_many({})
+# Store here,
+# on "/", put all images to screen
 
 UPLOAD_FOLDER = "./static/uploads"
 
@@ -20,6 +24,7 @@ statusCollection = userdatabase['statuses']
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 socketio = SocketIO(app)
 
 users = []
@@ -34,7 +39,30 @@ def test_connect(auth):
 
 @app.route('/')
 def hello_world():
-    print("cookies are: {}".format(request.cookies))
+    print("got here now dfsdgsf")
+    all_image_names = []
+    new_html = []
+    for image in imagesCollection.find({}):
+        print("image is : {}".format(image))
+        all_image_names.append(image["file"])
+    print("all image names are: {}".format(all_image_names))
+    with open("./templates/index.html") as f:
+        for line in f.readlines():
+            if "<!--{{html_images}}-->" in line:
+                new_html.append(line)
+
+                for image in all_image_names:
+                    # TODO - check if file is downloaded locally !!!
+                    image_path = "../static/uploads/" + image
+                    new_html.append("<img src=" + image_path + " height='60' width='60'>\n<p>")
+            elif "<img src" in line:
+                continue
+            else:
+                new_html.append(line)
+    with open("./templates/index.html", 'w') as f:
+        for line in new_html:
+            f.write(line)
+    print("index accessed")
     return render_template('index.html', members=users)
 
 
@@ -81,28 +109,39 @@ def set_status():
                     resp.set_cookie('status', status)
     return resp
 
-
-@app.route('/', methods=['POST'])
+@app.route("/image-upload", methods=["POST"])
 def upload_image():
-    print("cookies are: {}".format(request.cookies))
-    if 'file' not in request.files:
-        flash('No file part')
-        return redirect(request.url)
     file = request.files['file']
-    if file.filename == '':
-        flash('No image selected for uploading')
-        return redirect(request.url)
-    if file:
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return render_template('index.html', filename=filename)
-    else:
-        return redirect(request.url)
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    imagesCollection.insert_one({"file": filename})
+    print("initiating redirect")
+    return redirect("http://localhost:5000/")
 
-@app.route('/display/<filename>')
-def display_image(filename):
-    print('display_image filename: ' + filename)
-    return redirect(url_for('static', filename='uploads/' + filename), code=301)
+
+
+
+
+# @app.route('/', methods=['POST'])
+# def upload_image():
+#     if 'file' not in request.files:
+#         flash('No file part')
+#         return redirect(request.url)
+#     file = request.files['file']
+#     if file.filename == '':
+#         flash('No image selected for uploading')
+#         return redirect(request.url)
+#     if file:
+#         filename = secure_filename(file.filename)
+#         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+#         imagesCollection.insert_one({"file": filename})
+#         return render_template('index.html', filename=filename)
+#     else:
+#         return redirect(request.url)
+#
+# @app.route('/display/<filename>')
+# def display_image(filename):
+#     return redirect(url_for('static', filename='uploads/' + filename), code=301)
 
 
 if __name__ == '__main__':
