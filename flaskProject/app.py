@@ -16,6 +16,7 @@ myclient = pymongo.MongoClient('mongo', 27017)
 userdatabase = myclient["accounts"]
 userCollection = userdatabase['users']
 tokenCollection = userdatabase['tokens']
+statusCollection = userdatabase['statuses']
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -29,7 +30,7 @@ def test_connect(auth):
 
 
 @app.route('/')
-def hello_world():  # put application's code here
+def hello_world():
     users = ['sam', 'hakeem', 'ethan']
     return render_template('index.html', members=users)
 
@@ -62,6 +63,22 @@ def register():
         print("you made an account", file=sys.stderr)
         #put code for front end
     return current_app.send_static_file('register.html')
+
+@app.route('/status', methods=['POST', 'GET'])
+def set_status():
+    resp = make_response(current_app.send_static_file('status.html'))
+    if request.method == 'POST':
+        print('here', file=sys.stderr)
+        print(request.form.get('status'), file=sys.stderr)
+        status = request.form.get('status')
+        username = request.cookies.get('username')
+        token = request.cookies.get('token')
+        for t in tokenCollection.find({}):
+            if t.get('username') == username:
+                if bcrypt.checkpw(token.encode(), t.get('token')):
+                    statusCollection.insert_one({'username': username, 'status': status})
+                    resp.set_cookie('status', status)
+    return resp
 
 
 @app.route("/image-upload", methods=["POST", "GET"])
