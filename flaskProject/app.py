@@ -1,11 +1,10 @@
-<<<<<<< HEAD
 from flask import Flask, render_template, send_from_directory, current_app, request, redirect, url_for, flash
 from flask_socketio import SocketIO
 from werkzeug.utils import secure_filename
 import os
+import secrets
 
 UPLOAD_FOLDER = "./profile_pictures"
-=======
 from flask import Flask, render_template, current_app, request, make_response
 from flask_socketio import SocketIO
 import helper_functions
@@ -16,7 +15,7 @@ import bcrypt
 myclient = pymongo.MongoClient('mongo', 27017)
 userdatabase = myclient["accounts"]
 userCollection = userdatabase['users']
->>>>>>> main
+tokenCollection = userdatabase['tokens']
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -45,7 +44,12 @@ def login():
             user = userCollection.find_one({'username': username})
             if bcrypt.checkpw(password.encode(), user['password']):
                 print("logged in", file=sys.stderr)
-        resp.set_cookie('username', username)
+                token = secrets.token_urlsafe(80)
+                tokenh = bcrypt.hashpw(token.encode(), bcrypt.gensalt())
+                build_entry = {'username': username, 'token': tokenh}
+                tokenCollection.insert_one(build_entry)
+                resp.set_cookie('username', username)
+                resp.set_cookie('token', token)
     return resp
 
 @app.route('/register', methods=['post', 'get'])
