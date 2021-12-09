@@ -25,12 +25,22 @@ socketio = SocketIO(app)
 
 users = []
 
+
 @socketio.on('connect')
 def test_connect(auth):
     username = request.cookies.get('username')
     print(username, file=sys.stderr)
-    users.append(username)
+    if username is not None:
+        users.append(username)
     print('connected', file=sys.stderr)
+
+
+@socketio.on('disconnect')
+def test_disconnect():
+    username = request.cookies.get('username')
+    if username is not None:
+        users.remove(username)
+    print('Client disconnected', file=sys.stderr)
 
 
 @app.route('/')
