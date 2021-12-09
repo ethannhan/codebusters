@@ -8,7 +8,7 @@ import os
 from werkzeug.utils import secure_filename
 
 
-myclient = pymongo.MongoClient('mongo', 27017)
+myclient = pymongo.MongoClient('localhost', 27017)
 userdatabase = myclient["accounts"]
 userCollection = userdatabase['users']
 
@@ -63,6 +63,7 @@ def register():
 
 @app.route('/status', methods=['POST', 'GET'])
 def set_status():
+    print("cookies are: {}".format(request.cookies))
     resp = make_response(current_app.send_static_file('status.html'))
     if request.method == 'POST':
         print('here', file=sys.stderr)
@@ -80,6 +81,7 @@ def set_status():
 
 @app.route('/', methods=['POST'])
 def upload_image():
+    print("cookies are: {}".format(request.cookies))
     if 'file' not in request.files:
         flash('No file part')
         return redirect(request.url)
