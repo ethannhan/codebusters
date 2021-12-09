@@ -14,6 +14,8 @@ userCollection = userdatabase['users']
 
 UPLOAD_FOLDER = "./static/uploads"
 
+tokenCollection = userdatabase['tokens']
+statusCollection = userdatabase['statuses']
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -27,9 +29,10 @@ def test_connect(auth):
 
 
 @app.route('/')
-def hello_world():  # put application's code here
-    users = ['sam', 'hakeem', 'ethan']
+def hello_world():
+    users = ['sam', 'hakeem', 'ethan', "nitya"]
     return render_template('index.html', members=users)
+
 
 @app.route('/login', methods=['post', 'get'])
 def login():
@@ -45,6 +48,7 @@ def login():
         resp.set_cookie('username', username)
     return resp
 
+
 @app.route('/register', methods=['post', 'get'])
 def register():
     if request.method == 'POST':
@@ -56,9 +60,23 @@ def register():
         #put code for front end
     return current_app.send_static_file('register.html')
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/status', methods=['POST', 'GET'])
+def set_status():
+    resp = make_response(current_app.send_static_file('status.html'))
+    if request.method == 'POST':
+        print('here', file=sys.stderr)
+        print(request.form.get('status'), file=sys.stderr)
+        status = request.form.get('status')
+        username = request.cookies.get('username')
+        token = request.cookies.get('token')
+        for t in tokenCollection.find({}):
+            if t.get('username') == username:
+                if bcrypt.checkpw(token.encode(), t.get('token')):
+                    statusCollection.insert_one({'username': username, 'status': status})
+                    resp.set_cookie('status', status)
+    return resp
+
 
 @app.route('/', methods=['POST'])
 def upload_image():
@@ -69,14 +87,11 @@ def upload_image():
     if file.filename == '':
         flash('No image selected for uploading')
         return redirect(request.url)
-    if file and allowed_file(file.filename):
+    if file:
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        #print('upload_image filename: ' + filename)
-        flash('Image successfully uploaded and displayed below')
         return render_template('index.html', filename=filename)
     else:
-        flash('Allowed image types are -> png, jpg, jpeg, gif')
         return redirect(request.url)
 
 @app.route('/display/<filename>')
