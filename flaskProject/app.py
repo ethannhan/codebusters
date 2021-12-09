@@ -23,15 +23,18 @@ app.config['SECRET_KEY'] = 'secret!'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 socketio = SocketIO(app)
 
+users = []
 
 @socketio.on('connect')
 def test_connect(auth):
-    print('connected')
+    username = request.cookies.get('username')
+    print(username, file=sys.stderr)
+    users.append(username)
+    print('connected', file=sys.stderr)
 
 
 @app.route('/')
 def hello_world():
-    users = ['sam', 'hakeem', 'ethan']
     return render_template('index.html', members=users)
 
 @app.route('/login', methods=['post', 'get'])
