@@ -8,7 +8,7 @@ import os
 from werkzeug.utils import secure_filename
 
 
-myclient = pymongo.MongoClient('localhost', 27017) #TODO mongo/localhost
+myclient = pymongo.MongoClient('mongo', 27017) #TODO mongo/localhost
 userdatabase = myclient["accounts"]
 userCollection = userdatabase['users']
 imagesCollection = userdatabase["images"]
