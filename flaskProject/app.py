@@ -26,7 +26,7 @@ socketio = SocketIO(app)
 
 users = []
 sids = {}
-statusmessage = {}
+statusmessage = []
 
 @socketio.on('connect')
 def test_connect(auth):
@@ -61,7 +61,10 @@ def dm(data):
 
 @socketio.on('statusmessage')
 def dm(data):
-   statusmessage[request.cookies.get('username')] = data
+   messagestr= str(request.cookies.get('username')) + "- "
+   messagestr += str(data)
+   #statusmessage[request.cookies.get('username')] = data
+   statusmessage.append(messagestr)
    print(statusmessage, file=sys.stderr)
 
 

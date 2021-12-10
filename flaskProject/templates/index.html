@@ -56,11 +56,8 @@
 
 <br/>
  <br/>
- {% for key, value in statuschat.items() %}
-   <tr>
-     <td> {{ key }} </td>
-     <td> {{ value }} </td>
-   </tr>
+ {% for message in statuschat %}
+        <li>{{ message }}</li>
        {% endfor %}
 
 
