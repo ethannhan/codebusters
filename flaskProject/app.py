@@ -14,7 +14,7 @@ userdatabase = myclient["accounts"]
 userCollection = userdatabase['users']
 imagesCollection = userdatabase["images"]
 tokenCollection = userdatabase['tokens']
-# imagesCollection.delete_many({})
+imagesCollection.delete_many({})
 # Store here,
 # on "/", put all images to screen
 
@@ -55,22 +55,21 @@ def dm(data):
 
 @app.route('/', methods=['post', 'get'])
 def hello_world():
-    print("got here now dfsdgsf")
     all_image_names = []
     new_html = []
     for image in imagesCollection.find({}):
-        print("image is : {}".format(image))
         all_image_names.append(image["file"])
-    print("all image names are: {}".format(all_image_names))
     with open("./templates/index.html") as f:
         for line in f.readlines():
             if "<!--{{html_images}}-->" in line:
                 new_html.append(line)
-
-                for image in all_image_names:
+                for image in all_image_names[::-1]:
                     # TODO - check if file is downloaded locally !!!
-                    image_path = "../static/uploads/" + image
-                    new_html.append("<img src=" + image_path + " height='60' width='60'>\n<p>")
+                    html_image_path = "../static/uploads/" + image
+                    os_image_path = "./static/uploads/" + image
+                    print(os.path.exists(os_image_path))
+                    if os.path.exists(os_image_path):
+                        new_html.append("<img src=" + html_image_path + " height='60' width='60'><p>\n")
             elif "<img src" in line:
                 continue
             else:
@@ -78,7 +77,6 @@ def hello_world():
     with open("./templates/index.html", 'w') as f:
         for line in new_html:
             f.write(line)
-    print("index accessed")
     return render_template('index.html', members=users)
 
 
@@ -138,7 +136,6 @@ def upload_image():
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     imagesCollection.insert_one({"file": filename})
-    print("initiating redirect")
     return redirect("http://localhost:5000/")
 
 
