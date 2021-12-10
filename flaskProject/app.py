@@ -1,11 +1,9 @@
-from flask import Flask, render_template, send_from_directory, current_app, request, redirect, url_for, flash
-from flask_socketio import SocketIO
 from werkzeug.utils import secure_filename
 import os
 import secrets
 
-UPLOAD_FOLDER = "./profile_pictures"
-from flask import Flask, render_template, current_app, request, make_response
+UPLOAD_FOLDER = "./static/uploads"
+from flask import Flask, render_template, current_app, request, make_response, redirect
 from flask_socketio import SocketIO
 import helper_functions
 import pymongo
@@ -17,10 +15,14 @@ userdatabase = myclient["accounts"]
 userCollection = userdatabase['users']
 tokenCollection = userdatabase['tokens']
 statusCollection = userdatabase['statuses']
+imagesCollection = userdatabase["images"]
+imagesCollection.delete_many({})
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 socketio = SocketIO(app)
 
 users = []
@@ -43,6 +45,7 @@ def test_disconnect():
         users.remove(username)
     print('Client disconnected', file=sys.stderr)
 
+
 @socketio.on('dm')
 def dm(data):
     print(data, file=sys.stderr)
@@ -50,6 +53,28 @@ def dm(data):
 
 @app.route('/', methods=['post', 'get'])
 def hello_world():
+    all_image_names = []
+    new_html = []
+    for image in imagesCollection.find({}):
+        all_image_names.append(image["file"])
+    with open("./templates/index.html") as f:
+        for line in f.readlines():
+            if "<!--{{html_images}}-->" in line:
+                new_html.append(line)
+                for image in all_image_names[::-1]:
+                    # TODO - check if file is downloaded locally !!!
+                    html_image_path = "../static/uploads/" + image
+                    os_image_path = "./static/uploads/" + image
+                    print(os.path.exists(os_image_path))
+                    if os.path.exists(os_image_path):
+                        new_html.append("<img src=" + html_image_path + " height='60' width='60'><p>\n")
+            elif "<img src" in line:
+                continue
+            else:
+                new_html.append(line)
+    with open("./templates/index.html", 'w') as f:
+        for line in new_html:
+            f.write(line)
     return render_template('index.html', members=users)
 
 @app.route('/login', methods=['post', 'get'])
@@ -99,26 +124,13 @@ def set_status():
     return resp
 
 
-@app.route("/image-upload", methods=["POST", "GET"])
-def profile_picture():
-    uploaded_file = request.files["file"]
-    print("filename is: {}".format(uploaded_file.filename))
-    filename = secure_filename(uploaded_file.filename)
-    if filename:
-        print("filename is: {}".format(uploaded_file.filename))
-        uploaded_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    return redirect(url_for("uploaded_file", filename=filename))
-
-
-@app.route('/show/<filename>')
-def uploaded_file(filename):
-    filename = 'http://127.0.0.1:5000/uploads/' + filename
-    return render_template('index.html', filename=filename)
-
-
-@app.route('/uploads/<filename>')
-def send_file(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename)
+@app.route("/image-upload", methods=["POST"])
+def upload_image():
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    imagesCollection.insert_one({"file": filename})
+    return redirect("http://localhost:5000/")
 
 
 if __name__ == '__main__':
