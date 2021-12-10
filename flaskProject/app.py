@@ -16,7 +16,6 @@ userCollection = userdatabase['users']
 tokenCollection = userdatabase['tokens']
 statusCollection = userdatabase['statuses']
 imagesCollection = userdatabase["images"]
-imagesCollection.delete_many({})
 
 
 app = Flask(__name__)
@@ -100,8 +99,8 @@ def login():
                 tokenh = bcrypt.hashpw(token.encode(), bcrypt.gensalt())
                 build_entry = {'username': username, 'token': tokenh}
                 tokenCollection.insert_one(build_entry)
-                resp.set_cookie('username', username)
-                resp.set_cookie('token', token)
+                resp.set_cookie('username', username, max_age=60 * 60 * 24, httponly=True)
+                resp.set_cookie('token', token, max_age=60 * 60 * 24, httponly=True)
     return resp
 
 @app.route('/register', methods=['post', 'get'])
@@ -128,7 +127,7 @@ def set_status():
             if t.get('username') == username:
                 if bcrypt.checkpw(token.encode(), t.get('token')):
                     statusCollection.insert_one({'username': username, 'status': status})
-                    resp.set_cookie('status', status)
+                    resp.set_cookie('status', status, max_age=60 * 60 * 24, httponly=True)
     return resp
 
 
