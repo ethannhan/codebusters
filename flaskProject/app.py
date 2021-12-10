@@ -26,6 +26,7 @@ socketio = SocketIO(app)
 
 users = []
 sids = {}
+statusmessage = {}
 
 @socketio.on('connect')
 def test_connect(auth):
@@ -57,6 +58,11 @@ def dm(data):
     message = username + " has DMed you! they said: " + message
     socketio.emit('send dm', message, to=sids[receiver])
 
+@socketio.on('statusmessage')
+def dm(data):
+   statusmessage[request.cookies.get('username')] = data
+   print(statusmessage, file=sys.stderr)
+
 
 @app.route('/', methods=['post', 'get'])
 def hello_world():
@@ -82,7 +88,7 @@ def hello_world():
     with open("./templates/index.html", 'w') as f:
         for line in new_html:
             f.write(line)
-    return render_template('index.html', members=users)
+    return render_template('index.html', members=users, statuschat=statusmessage)
 
 @app.route('/login', methods=['post', 'get'])
 def login():

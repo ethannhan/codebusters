@@ -48,6 +48,22 @@
 	</p>
 </form>
 
+<form id = "statuspost" action = "">
+   Quote of the day: <input type="text" id="Quote"><br>
+   <input type="submit" value="Submit">
+    </form>
+
+
+<br/>
+ <br/>
+ {% for key, value in statuschat.items() %}
+   <tr>
+     <td> {{ key }} </td>
+     <td> {{ value }} </td>
+   </tr>
+       {% endfor %}
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
 <script src="http://code.jquery.com/jquery-latest.min.js"></script>
 <script type="text/javascript" charset="utf-8">
@@ -58,6 +74,14 @@
         //$('#Input').val('');
         return false;
       });
+
+    $('#statuspost').submit(function(){
+       socket.emit('statusmessage', $('#Quote').val());
+       //socket.emit('message', "Input");
+       //$('#Input').val('');
+       return false;
+     });
+
     socket.on("send dm", data => {
         alert(data);
     });
