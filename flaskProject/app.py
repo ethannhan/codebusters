@@ -94,6 +94,10 @@ def login():
             print("account found", file=sys.stderr)
             user = userCollection.find_one({'username': username})
             if bcrypt.checkpw(password.encode(), user['password']):
+                for d in statusCollection.find({}):
+                    if d.get('username') == username:
+                        status = d.get('status')
+                        resp.set_cookie('status', status, max_age=60 * 60 * 24, httponly=True)
                 print("logged in", file=sys.stderr)
                 token = secrets.token_urlsafe(80)
                 tokenh = bcrypt.hashpw(token.encode(), bcrypt.gensalt())
