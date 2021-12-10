@@ -53,6 +53,7 @@ def dm(data):
     username = request.cookies.get('username')
     message = data[0]
     receiver = data[1]
+    message = helper_functions.clean_inputs(message)
     print(message, file=sys.stderr)
     print(sids[receiver], file=sys.stderr)
     message = username + " has DMed you! they said: " + message
@@ -96,6 +97,8 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        username = helper_functions.clean_inputs(username)
+        password = helper_functions.clean_inputs(password)
         if userCollection.find_one({'username': username}) is not None:
             print("account found", file=sys.stderr)
             user = userCollection.find_one({'username': username})
@@ -118,6 +121,8 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        username = helper_functions.clean_inputs(username)
+        password = helper_functions.clean_inputs(password)
         user_entry = helper_functions.create_account(username, password)
         userCollection.insert_one(user_entry)
         print("you made an account", file=sys.stderr)
@@ -131,6 +136,7 @@ def set_status():
         print('here', file=sys.stderr)
         print(request.form.get('status'), file=sys.stderr)
         status = request.form.get('status')
+        status = helper_functions.clean_inputs(status)
         username = request.cookies.get('username')
         token = request.cookies.get('token')
         for t in tokenCollection.find({}):
