@@ -50,10 +50,12 @@ def test_disconnect():
 
 @socketio.on('dm')
 def dm(data):
+    username = request.cookies.get('username')
     message = data[0]
     receiver = data[1]
     print(message, file=sys.stderr)
     print(sids[receiver], file=sys.stderr)
+    message = username + " has DMed you! they said: " + message
     socketio.emit('send dm', message, to=sids[receiver])
 
 
