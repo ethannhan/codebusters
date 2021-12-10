@@ -8,7 +8,7 @@ import os
 from werkzeug.utils import secure_filename
 
 
-myclient = pymongo.MongoClient('mongo', 27017) #TODO mongo/localhost
+myclient = pymongo.MongoClient('localhost', 27017) #TODO mongo/localhost
 userdatabase = myclient["accounts"]
 userCollection = userdatabase['users']
 imagesCollection = userdatabase["images"]
@@ -113,6 +113,7 @@ def set_status():
         username = request.cookies.get('username')
         token = request.cookies.get('token')
         for t in tokenCollection.find({}):
+            print(t)
             if t.get('username') == username:
                 if bcrypt.checkpw(token.encode(), t.get('token')):
                     statusCollection.insert_one({'username': username, 'status': status})
