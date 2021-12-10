@@ -37,6 +37,7 @@ def test_connect(auth):
     print(username, file=sys.stderr)
     if username is not None:
         users.append(username)
+    print(request.sid, file=sys.stderr)
     print('connected', file=sys.stderr)
 
 
@@ -47,8 +48,12 @@ def test_disconnect():
         users.remove(username)
     print('Client disconnected', file=sys.stderr)
 
+@socketio.on('dm')
+def dm(data):
+    print(data, file=sys.stderr)
 
-@app.route('/')
+
+@app.route('/', methods=['post', 'get'])
 def hello_world():
     print("got here now dfsdgsf")
     all_image_names = []

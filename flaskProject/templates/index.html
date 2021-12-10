@@ -8,9 +8,14 @@
 <a href="/login" >  Login  </a>
 <a href="/register" >  Register  </a>
 <a href="/status" >  Set Status  </a>
+
     <ul>
         {% for member in members %}
         <li>{{ member }}</li>
+            <form id = "form" action = "">
+      dm: <input type="text" id="Input"><br>
+      <input type="submit" value="Submit">
+    </form>
 	    {% endfor %}
 	</ul>
 
@@ -49,7 +54,17 @@
 </form>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
 <script type="text/javascript" charset="utf-8">
     var socket = io();
+    $('#form').submit(function(){
+        socket.emit('dm', $('#Input').val());
+        //socket.emit('message', "Input");
+        //$('#Input').val('');
+        return false;
+      });
+</script>
+<script type="text/javascript" charset="utf-8">
+
 </script>
 </html>
