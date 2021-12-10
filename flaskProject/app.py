@@ -26,14 +26,16 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 socketio = SocketIO(app)
 
 users = []
-
+sids = {}
 
 @socketio.on('connect')
 def test_connect(auth):
     username = request.cookies.get('username')
+    sid = request.sid
     print(username, file=sys.stderr)
     if username is not None:
         users.append(username)
+        sids[username] = sid
     print(request.sid, file=sys.stderr)
     print('connected', file=sys.stderr)
 
@@ -48,7 +50,11 @@ def test_disconnect():
 
 @socketio.on('dm')
 def dm(data):
-    print(data, file=sys.stderr)
+    message = data[0]
+    receiver = data[1]
+    print(message, file=sys.stderr)
+    print(sids[receiver], file=sys.stderr)
+    socketio.emit('send dm', message, to=sids[receiver])
 
 
 @app.route('/', methods=['post', 'get'])
