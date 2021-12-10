@@ -68,6 +68,11 @@ def dm(data):
    print(statusmessage, file=sys.stderr)
 
 
+@socketio.on('getbuttonclick')
+def getbuttonclick(data):
+    print(data, file=sys.stderr)
+    socketio.emit('sendbuttonclick', data, broadcast=True)
+
 @app.route('/', methods=['post', 'get'])
 def hello_world():
     all_image_names = []

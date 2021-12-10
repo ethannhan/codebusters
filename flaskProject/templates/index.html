@@ -60,6 +60,9 @@
         <li>{{ message }}</li>
        {% endfor %}
 
+<button id="update" type="button">Button</button>
+<div id="counter">1</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
 <script src="http://code.jquery.com/jquery-latest.min.js"></script>
@@ -79,9 +82,22 @@
        return false;
      });
 
+    socket.on("sendbuttonclick", data => {
+        $("#counter").html("My current count is: "+data);
+    });
+
     socket.on("send dm", data => {
         alert(data);
     });
+
+    var count = 0;
+
+$("#update").click(function() {
+    count++;
+    //$("#counter").html("My current count is: "+count);
+    socket.emit('getbuttonclick', count);
+});
+
 </script>
 <script type="text/javascript" charset="utf-8">
 
