@@ -5,6 +5,7 @@ import pymongo
 import sys
 import bcrypt
 import os
+import secrets
 from werkzeug.utils import secure_filename
 
 
@@ -12,13 +13,13 @@ myclient = pymongo.MongoClient('localhost', 27017) #TODO mongo/localhost
 userdatabase = myclient["accounts"]
 userCollection = userdatabase['users']
 imagesCollection = userdatabase["images"]
+tokenCollection = userdatabase['tokens']
 # imagesCollection.delete_many({})
 # Store here,
 # on "/", put all images to screen
 
 UPLOAD_FOLDER = "./static/uploads"
 
-tokenCollection = userdatabase['tokens']
 statusCollection = userdatabase['statuses']
 
 app = Flask(__name__)
@@ -87,7 +88,12 @@ def login():
             user = userCollection.find_one({'username': username})
             if bcrypt.checkpw(password.encode(), user['password']):
                 print("logged in", file=sys.stderr)
-        resp.set_cookie('username', username)
+                token = secrets.token_urlsafe(80)
+                tokenh = bcrypt.hashpw(token.encode(), bcrypt.gensalt())
+                build_entry = {'username': username, 'token': tokenh}
+                tokenCollection.insert_one(build_entry)
+                resp.set_cookie('username', username)
+                resp.set_cookie('token', token)
     return resp
 
 
@@ -112,6 +118,7 @@ def set_status():
         status = request.form.get('status')
         username = request.cookies.get('username')
         token = request.cookies.get('token')
+        print("request.cookies: {}".format(request.cookies))
         for t in tokenCollection.find({}):
             print(t)
             if t.get('username') == username:
