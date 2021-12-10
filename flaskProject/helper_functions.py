@@ -5,11 +5,11 @@ def clean_inputs(message: str):
     clean_output = ""
     for i in message:
         if i == "<":
-            clean_output += "&lt"
+            clean_output += "&lt;"
         elif i == ">":
-            clean_output += "&gt"
+            clean_output += "&gt;"
         elif i == "&":
-            clean_output += "&amp"
+            clean_output += "&amp;"
         else:
             clean_output += i
     return clean_output
