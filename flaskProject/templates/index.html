@@ -84,6 +84,7 @@
 
     socket.on("sendbuttonclick", data => {
         $("#counter").html("My current count is: "+data);
+        count=data;
     });
 
     socket.on("send dm", data => {
